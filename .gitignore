@@ -5,9 +5,9 @@ data/processed/
 *.parquet
 *.zip
 
-# --- Resultados / figuras generadas (opcional, descomentar si no se versionan) ---
-# figures/
-# results/
+# --- Resultados / figuras generadas (se versionan para el informe) ---
+# figures/          # Comentado: las figuras SÍ se suben para el informe
+# results/          # Comentado: los resultados SÍ se suben para el informe
 
 # --- Python ---
 __pycache__/
@@ -17,12 +17,28 @@ __pycache__/
 .venv/
 venv/
 env/
+poetry.lock
+pip-wheel-metadata/
 
 # --- Credenciales Kaggle (nunca subir) ---
 kaggle.json
+.kaggle/
 
 # --- Sistema operativo / editores ---
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# --- Jupyter Notebook ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# --- Logs y archivos temporales ---
+*.log
+*.tmp
+*.bak
