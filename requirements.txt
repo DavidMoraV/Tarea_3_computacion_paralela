@@ -20,3 +20,29 @@ ipykernel>=6.0.0
 
 # --- Utilidades de medición ---
 psutil>=5.9.0      # núcleos y RAM del sistema para el benchmark
+
+# --- Núcleo del procesamiento de datos ---
+polars>=1.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+pyarrow>=15.0.0
+
+# --- Machine Learning ---
+scikit-learn>=1.3.0
+# Opcional (modelos rápidos sobre datos grandes); descomentar si se usan:
+# lightgbm>=4.0.0
+# xgboost>=2.0.0
+
+# --- Visualización ---
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# --- Notebook / entorno ---
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# --- Utilidades de medición ---
+psutil>=5.9.0      # núcleos y RAM del sistema para el benchmark
+
+# --- Progreso visual (opcional) ---
+# tqdm>=4.66.0
