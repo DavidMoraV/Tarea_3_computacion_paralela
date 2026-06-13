@@ -1,0 +1,28 @@
+# --- Datos (NO subir CSVs pesados a GitHub: límite de 100 MB por archivo) ---
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.zip
+
+# --- Resultados / figuras generadas (opcional, descomentar si no se versionan) ---
+# figures/
+# results/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# --- Credenciales Kaggle (nunca subir) ---
+kaggle.json
+
+# --- Sistema operativo / editores ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
