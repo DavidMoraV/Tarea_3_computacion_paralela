@@ -9,8 +9,8 @@
 Pipeline completo de análisis de datos y aprendizaje automático construido con **Polars**,
 comparando sistemáticamente su rendimiento contra **Pandas** en cada etapa del procesamiento.
 
-**Problema:** clasificación binaria de vuelos — predecir si un vuelo sufrirá un **retraso
-significativo en la llegada** (umbral: retraso de llegada > 15 minutos).
+**Problema:** clasificación binaria — predecir si un vuelo sufrirá un **retraso significativo en la
+llegada** (`ARRIVAL_DELAY > 15 min`). La clase positiva está desbalanceada (~18%).
 
 ## 2. Fuente del dataset
 
@@ -18,7 +18,7 @@ significativo en la llegada** (umbral: retraso de llegada > 15 minutos).
 
 - Kaggle: https://www.kaggle.com/datasets/usdot/flight-delays
 - Licencia: CC0 (Dominio Público)
-- Archivos: `flights.csv` (~5.8M filas, 31 columnas), `airlines.csv`, `airports.csv`
+- Archivos: `flights.csv` (5,819,079 filas, 31 columnas), `airlines.csv`, `airports.csv`
 
 > El dataset **no se incluye** en el repositorio por su tamaño. Ver "Instrucciones de instalación".
 
@@ -30,25 +30,31 @@ significativo en la llegada** (umbral: retraso de llegada > 15 minutos).
 ## 4. Instrucciones de instalación
 
 ```bash
-# 1. Crear y activar entorno virtual
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux / macOS
-
-# 2. Instalar dependencias
+.venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 
-# 3. Descargar el dataset desde Kaggle a data/raw/
-#    Opción A: Usar Kaggle CLI
-#    pip install kaggle
-#    kaggle datasets download usdot/flight-delays -p data/raw/ --unzip
-#    
-#    Opción B: Descarga manual desde https://www.kaggle.com/datasets/usdot/flight-delays
+# Descargar el dataset a data/raw/
+pip install kaggle
+kaggle datasets download usdot/flight-delays -p data/raw/ --unzip
+# (o descarga manual desde la URL de Kaggle)
+```
 
-# Instrucciones de ejecución
+## 5. Instrucciones de ejecución
+
+```bash
+# Notebook principal
 jupyter notebook notebooks/Tarea_3_computacion_paralela.ipynb
 
-# Estructura del repositorio
+# O ejecutar los módulos por separado
+python src/polars_pipeline.py
+python src/pandas_pipeline.py
+python src/train_models.py
+```
+
+## 6. Estructura del repositorio
+
+```
 Tarea_3/
 ├── data/
 │   ├── raw/           # CSVs originales de Kaggle (ignorados por git)
@@ -56,75 +62,74 @@ Tarea_3/
 ├── notebooks/
 │   └── Tarea_3_computacion_paralela.ipynb
 ├── src/
-│   ├── polars_pipeline.py
-│   ├── pandas_pipeline.py
-│   ├── preprocessing.py
-│   ├── feature_engineering.py
-│   └── train_models.py
+│   ├── preprocessing.py        # carga, objetivo y limpieza
+│   ├── feature_engineering.py  # features, join y group_by
+│   ├── polars_pipeline.py      # pipeline Polars cronometrado
+│   ├── pandas_pipeline.py      # pipeline Pandas cronometrado
+│   └── train_models.py         # entrenamiento y evaluación
 ├── figures/           # gráficas para el informe
 ├── results/           # tablas y métricas exportadas
 ├── report/
 │   └── report.pdf
 ├── requirements.txt
 └── README.md
+```
 
-##  Resumen de resultados
+## 7. Resumen de resultados
 
-###  Benchmark Polars vs Pandas
+### Benchmark Polars vs Pandas (dataset completo)
 
 | Etapa | Polars (s) | Pandas (s) | Speedup |
-|-------|------------|------------|---------|
-| lectura | 1.419 | 21.232 | **14.97x** |
-| filtrado | 0.683 | 3.485 | **5.10x** |
-| feature_eng | 0.082 | 0.590 | **7.16x** |
-| joins | 2.249 | 1.797 | 0.80x |
-| agregacion | 0.667 | 2.596 | **3.89x** |
+|-------|-----------|-----------|---------|
+| Lectura | 1.419 | 21.232 | **14.97x** |
+| Filtrado | 0.683 | 3.485 | **5.10x** |
+| Feature engineering | 0.082 | 0.590 | **7.16x** |
+| Joins | 2.249 | 1.797 | 0.80x |
+| Agregación | 0.667 | 2.596 | **3.89x** |
 | **TOTAL** | **5.100** | **29.699** | **5.82x** |
 
-**Observaciones:** 
-- Polars es excepcionalmente rápido en lectura de CSV (~15x más rápido)
-- Las transformaciones vectorizadas son muy eficientes (7.16x)
-- El único punto donde Pandas fue más rápido fue en joins con tablas pequeñas (airlines.csv)
+Polars destaca en lectura de CSV y transformaciones vectorizadas. El único punto a favor de Pandas
+fue el join con tablas pequeñas (`airlines.csv`).
 
-###  Escalabilidad
+### Escalabilidad
 
-| Porcentaje | Filas | Polars (s) | Pandas (s) | Speedup |
-|------------|-------|------------|------------|---------|
-| 25% | 1,454,769 | 0.238 | 1.301 | 5.47x |
-| 50% | 2,909,539 | 0.194 | 2.342 | 12.07x |
-| 75% | 4,364,309 | 0.272 | 4.250 | 15.60x |
-| 100% | 5,819,079 | 0.316 | 4.971 | **15.72x** |
+| Porcentaje | Filas | Speedup |
+|-----------|-------|---------|
+| 25% | 1,454,769 | 5.47x |
+| 50% | 2,909,539 | 12.07x |
+| 75% | 4,364,309 | 15.60x |
+| 100% | 5,819,079 | **15.72x** |
 
-**Speedup promedio:** 12.21x  
-**Tendencia:** El speedup **aumenta** con el tamaño del dataset → Polars es más beneficioso para datasets grandes.
+El speedup **crece con el tamaño** del dataset (promedio 12.21x): Polars es más beneficioso cuanto
+mayor es el volumen de datos.
 
-###  Lazy Execution (Eager vs Lazy)
+### Lazy Execution (Eager vs Lazy)
 
-| Método | Tiempo total (s) |
-|--------|------------------|
-| Eager (read_csv) | X.XXX |
-| Lazy (scan_csv) | X.XXX |
+| Modo | Tiempo total (s) | Memoria pico (MB) |
+|------|-----------------|-------------------|
+| Eager (`read_csv`) | 11.768 | 3934.3 |
+| Lazy (`scan_csv`) | **5.926** | **1429.6** |
 
-*Resultados pendientes de completar*
+La ejecución lazy fue **~2x más rápida** y usó **~64% menos memoria**, gracias a *projection* y
+*predicate pushdown*.
 
-###  Modelos de Machine Learning
+### Modelos de Machine Learning
 
-| Modelo | Tiempo entrenamiento (s) | Accuracy | F1 | AUC |
-|--------|-------------------------|----------|----|-----|
-| Regresión Logística | 17.69 | 0.9257 | 0.812 | 0.9653 |
+| Modelo | Tiempo (s) | Accuracy | F1 | AUC |
+|--------|-----------|----------|----|----|
+| Regresión Logística | 17.69 | 0.9257 | 0.8120 | 0.9653 |
 | Random Forest | 301.98 | 0.9436 | 0.8448 | 0.9701 |
-| Gradient Boosting | 126.47 | 0.9314 | 0.8242 | **0.9719** |
+| Gradient Boosting (Hist) | 126.47 | 0.9314 | 0.8242 | **0.9719** |
 
-**Mejor modelo:** Gradient Boosting (Hist) con AUC = 0.9719
+**Mejor modelo:** Gradient Boosting (mejor AUC y buen balance de tiempo). Variable más importante:
+**DEPARTURE_DELAY**.
 
-###  Variables más importantes (Random Forest)
+## 8. Conclusiones
 
-1. **DEPARTURE_DELAY** (retraso de salida)
-2. **SCHEDULED_TIME** (tiempo programado de vuelo)
-3. **TAXI_OUT** (tiempo de taxi en origen)
-4. **DISTANCE** (distancia del vuelo)
-5. **HORA_SALIDA** (hora programada de salida)
-
-##  Conclusiones
-
-*(Se completarán al finalizar todos los experimentos)*
+- Polars ofrece una ventaja de rendimiento sustancial sobre Pandas (5.82x total, hasta 15.72x), con
+  un beneficio que **aumenta con el tamaño** de los datos.
+- La evaluación diferida (lazy) duplica la velocidad y reduce la memoria ~64%, clave para datasets
+  que no caben en RAM.
+- Los tres modelos superan AUC 0.96; Gradient Boosting da el mejor balance desempeño/tiempo.
+- Estrategia recomendada: **Polars para el ETL pesado** y el ecosistema **Pandas/numpy en la etapa
+  final** de modelado y visualización.
